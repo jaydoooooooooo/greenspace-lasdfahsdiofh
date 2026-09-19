@@ -1,0 +1,11 @@
+{
+  "name": "GreenSpace",
+  "description": "EcoGuide plant care, natural remedies, and climate-aware gardening instructions with live location and temperature tracking.",
+  "requestFramePermissions": [
+    "camera",
+    "geolocation"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
