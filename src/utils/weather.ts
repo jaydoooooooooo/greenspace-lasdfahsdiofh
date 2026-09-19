@@ -1,4 +1,4 @@
-import { LocationData, PresetCity, WeatherData } from '../types';
+import { DailyForecastDay, LocationData, PresetCity, WeatherData } from '../types';
 
 export const PRESET_CITIES: PresetCity[] = [
   { name: 'San Francisco', country: 'United States', lat: 37.7749, lon: -122.4194 },
@@ -52,7 +52,7 @@ export function getWeatherCondition(code: number): { text: string; icon: string 
 }
 
 export async function fetchWeather(lat: number, lon: number): Promise<WeatherData> {
-  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min&timezone=auto`;
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max,uv_index_max&forecast_days=7&timezone=auto`;
   const res = await fetch(url);
   if (!res.ok) {
     throw new Error(`Failed to fetch weather: ${res.statusText}`);
@@ -61,6 +61,41 @@ export async function fetchWeather(lat: number, lon: number): Promise<WeatherDat
   const current = data.current;
   const daily = data.daily;
   const cond = getWeatherCondition(current.weather_code);
+
+  const forecastDays: DailyForecastDay[] = [];
+  if (daily && daily.time && Array.isArray(daily.time)) {
+    for (let i = 0; i < daily.time.length; i++) {
+      const dateStr = daily.time[i];
+      const wCode = daily.weather_code?.[i] ?? 0;
+      const c = getWeatherCondition(wCode);
+
+      let dayName = 'Day';
+      try {
+        if (i === 0) {
+          dayName = 'Today';
+        } else if (i === 1) {
+          dayName = 'Tomorrow';
+        } else {
+          const dateObj = new Date(dateStr + 'T00:00:00');
+          dayName = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
+        }
+      } catch {
+        dayName = `Day ${i + 1}`;
+      }
+
+      forecastDays.push({
+        date: dateStr,
+        dayName,
+        weatherCode: wCode,
+        weatherDescription: c.text,
+        tempMax: daily.temperature_2m_max?.[i] != null ? Math.round(daily.temperature_2m_max[i]) : Math.round(current.temperature_2m),
+        tempMin: daily.temperature_2m_min?.[i] != null ? Math.round(daily.temperature_2m_min[i]) : Math.round(current.temperature_2m),
+        precipitationProbability: daily.precipitation_probability_max?.[i] != null ? Math.round(daily.precipitation_probability_max[i]) : 0,
+        windSpeedMax: daily.wind_speed_10m_max?.[i] != null ? Math.round(daily.wind_speed_10m_max[i]) : Math.round(current.wind_speed_10m),
+        uvIndexMax: daily.uv_index_max?.[i] != null ? Math.round(daily.uv_index_max[i] * 10) / 10 : undefined,
+      });
+    }
+  }
 
   return {
     temperature: Math.round(current.temperature_2m),
@@ -73,6 +108,7 @@ export async function fetchWeather(lat: number, lon: number): Promise<WeatherDat
     tempMax: daily?.temperature_2m_max?.[0] ? Math.round(daily.temperature_2m_max[0]) : Math.round(current.temperature_2m + 3),
     tempMin: daily?.temperature_2m_min?.[0] ? Math.round(daily.temperature_2m_min[0]) : Math.round(current.temperature_2m - 4),
     updatedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    forecast: forecastDays,
   };
 }
 

@@ -288,34 +288,36 @@ export const WelcomeTab: React.FC<WelcomeTabProps> = ({
         </section>
       </div>
 
-      {/* Quick Questions Section */}
-      <div className="pt-2">
-        <h4 className="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-3">
-          Instant EcoGuide Questions
-        </h4>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {quickPrompts.map((item, idx) => (
-            <button
-              key={idx}
-              type="button"
-              onClick={() => onStartEcoGuide(item.query)}
-              className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-emerald-100 dark:border-slate-800 hover:border-emerald-300 dark:hover:border-emerald-700 shadow-sm text-left transition-all group flex items-start gap-3 cursor-pointer"
-            >
-              <span className="text-2xl flex-shrink-0 group-hover:scale-110 transition-transform">
-                {item.icon}
-              </span>
-              <div>
-                <p className="text-sm font-bold text-slate-800 dark:text-white group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
-                  {item.label}
-                </p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-1">
-                  {item.query}
-                </p>
-              </div>
-            </button>
-          ))}
+      {/* Quick Questions Section - Hidden in Simple Mode */}
+      {!preferences.simpleMode && (
+        <div className="pt-2">
+          <h4 className="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-3">
+            Instant EcoGuide Questions
+          </h4>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {quickPrompts.map((item, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => onStartEcoGuide(item.query)}
+                className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-emerald-100 dark:border-slate-800 hover:border-emerald-300 dark:hover:border-emerald-700 shadow-sm text-left transition-all group flex items-start gap-3 cursor-pointer"
+              >
+                <span className="text-2xl flex-shrink-0 group-hover:scale-110 transition-transform">
+                  {item.icon}
+                </span>
+                <div>
+                  <p className="text-sm font-bold text-slate-800 dark:text-white group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
+                    {item.label}
+                  </p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-1">
+                    {item.query}
+                  </p>
+                </div>
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

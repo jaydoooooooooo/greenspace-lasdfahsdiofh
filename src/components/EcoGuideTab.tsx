@@ -462,12 +462,19 @@ export const EcoGuideTab: React.FC<EcoGuideTabProps> = ({
 
           {/* Diagnosis Card */}
           <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5 flex items-center gap-2">
-              <HelpCircle className="w-4 h-4 text-emerald-500" />
-              <span>Diagnostic Analysis</span>
-            </h3>
+            <div className="flex items-center justify-between mb-1.5">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                <HelpCircle className="w-4 h-4 text-emerald-500" />
+                <span>Diagnostic Analysis</span>
+              </h3>
+              {preferences.simpleMode && (
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300">
+                  Simple Mode Active
+                </span>
+              )}
+            </div>
             <p className="text-sm sm:text-base text-slate-800 dark:text-slate-200 leading-relaxed font-medium">
-              {remedy.diagnosis}
+              {preferences.simpleMode ? remedy.diagnosis.split('.')[0] + '.' : remedy.diagnosis}
             </p>
           </div>
 
@@ -475,29 +482,45 @@ export const EcoGuideTab: React.FC<EcoGuideTabProps> = ({
           <div className="space-y-3">
             <h3 className="text-sm font-bold uppercase tracking-wider text-slate-800 dark:text-white flex items-center gap-2">
               <Hammer className="w-4 h-4 text-emerald-500" />
-              <span>Required Organic Ingredients & Kitchen Measurements</span>
+              <span>{preferences.simpleMode ? 'Required Ingredients' : 'Required Organic Ingredients & Kitchen Measurements'}</span>
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {remedy.materials.map((mat, idx) => (
-                <div
-                  key={idx}
-                  className="p-3.5 rounded-2xl bg-emerald-50/50 dark:bg-slate-800 border border-emerald-100 dark:border-slate-700 flex items-center justify-between"
-                >
-                  <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-                    {mat.item}
-                  </span>
-                  <span className="text-xs font-bold px-2.5 py-1 rounded-lg bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300">
-                    {mat.amount}
-                  </span>
-                </div>
-              ))}
-            </div>
+            {preferences.simpleMode ? (
+              <div className="flex flex-wrap gap-2">
+                {remedy.materials.map((mat, idx) => (
+                  <div
+                    key={idx}
+                    className="px-3 py-1.5 rounded-xl bg-emerald-50/70 dark:bg-slate-800 border border-emerald-200/80 dark:border-slate-700 text-xs font-medium text-slate-800 dark:text-slate-200"
+                  >
+                    <span className="font-bold text-emerald-700 dark:text-emerald-300 mr-1.5">
+                      {mat.amount}
+                    </span>
+                    <span>{mat.item}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {remedy.materials.map((mat, idx) => (
+                  <div
+                    key={idx}
+                    className="p-3.5 rounded-2xl bg-emerald-50/50 dark:bg-slate-800 border border-emerald-100 dark:border-slate-700 flex items-center justify-between"
+                  >
+                    <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                      {mat.item}
+                    </span>
+                    <span className="text-xs font-bold px-2.5 py-1 rounded-lg bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300">
+                      {mat.amount}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Interactive Step-by-Step Instructions */}
           <div className="space-y-4 pt-2">
             <h3 className="text-sm font-bold uppercase tracking-wider text-slate-800 dark:text-white">
-              Preparation & Application Steps (Click to check off)
+              {preferences.simpleMode ? 'Quick Steps (Click to check off)' : 'Preparation & Application Steps (Click to check off)'}
             </h3>
             <div className="space-y-3">
               {remedy.steps.map((step, idx) => {
@@ -543,7 +566,7 @@ export const EcoGuideTab: React.FC<EcoGuideTabProps> = ({
                       >
                         {step.instruction}
                       </p>
-                      {step.proTip && (
+                      {!preferences.simpleMode && step.proTip && (
                         <p className="text-xs text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/50 p-2 rounded-xl border border-amber-200/60 dark:border-amber-900/60 mt-2">
                           <strong>💡 Pro-Tip:</strong> {step.proTip}
                         </p>

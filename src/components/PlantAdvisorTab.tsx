@@ -107,6 +107,7 @@ export const PlantAdvisorTab: React.FC<PlantAdvisorTabProps> = ({
   const [activePinId, setActivePinId] = useState<string | null>(null);
   const [draggingPinId, setDraggingPinId] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [showTutorial, setShowTutorial] = useState(true);
 
   const stageRef = useRef<HTMLDivElement>(null);
 
@@ -463,6 +464,15 @@ export const PlantAdvisorTab: React.FC<PlantAdvisorTabProps> = ({
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setShowTutorial((prev) => !prev)}
+              className="px-3.5 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/70 hover:bg-emerald-100 dark:hover:bg-emerald-900 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer"
+            >
+              <HelpCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              <span>{showTutorial ? 'Hide Tutorial' : 'How Advisor Works'}</span>
+            </button>
+
             {onBackToWelcome && (
               <button
                 type="button"
@@ -498,6 +508,82 @@ export const PlantAdvisorTab: React.FC<PlantAdvisorTabProps> = ({
             </button>
           </div>
         </div>
+
+        {/* Brief Tutorial: How Plant Advisor Works */}
+        {showTutorial && (
+          <div className="rounded-2xl bg-gradient-to-br from-emerald-900 via-slate-900 to-slate-950 text-white p-5 sm:p-6 border border-emerald-500/30 shadow-md space-y-4 animate-fadeIn">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-300 flex-shrink-0">
+                  <Sparkles className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+                    <span>How Plant Advisor Works</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                      Quick Guide
+                    </span>
+                  </h3>
+                  <p className="text-xs text-emerald-200/80">
+                    3 simple steps to find the ideal botanical species and placements for your exact space:
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowTutorial(false)}
+                className="p-1 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors cursor-pointer"
+                title="Close Tutorial"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 pt-1">
+              <div className="p-3.5 rounded-xl bg-white/5 border border-white/10 space-y-1.5">
+                <div className="flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-emerald-400 text-slate-950 font-black text-xs flex items-center justify-center flex-shrink-0">
+                    1
+                  </span>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-300">
+                    Choose or Photograph Space
+                  </h4>
+                </div>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Select a domestic preset (balcony, windowsill, or patio) or click <strong>Upload Photo</strong> / <strong>Capture Live</strong> with your camera.
+                </p>
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-white/5 border border-white/10 space-y-1.5">
+                <div className="flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-emerald-400 text-slate-950 font-black text-xs flex items-center justify-center flex-shrink-0">
+                    2
+                  </span>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-300">
+                    Microclimate Analysis
+                  </h4>
+                </div>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  The advisor analyzes sunlight angles, surface depth zones, and wind shear to diagnose your space's greening potential.
+                </p>
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-white/5 border border-white/10 space-y-1.5">
+                <div className="flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-emerald-400 text-slate-950 font-black text-xs flex items-center justify-center flex-shrink-0">
+                    3
+                  </span>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-300">
+                    Explore Placement Pins
+                  </h4>
+                </div>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Click the interactive pins directly on the photo to see matching plant species, biodiversity scores, and organic care advice.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Preset Sample Spaces Switcher */}
         <div>
@@ -769,110 +855,186 @@ export const PlantAdvisorTab: React.FC<PlantAdvisorTabProps> = ({
         {/* Spatial Microclimate Diagnosis (5 cols) */}
         <div className="lg:col-span-5 flex flex-col gap-4">
           <div className="rounded-3xl bg-white dark:bg-slate-900 p-6 sm:p-7 border border-emerald-100 dark:border-slate-800 shadow-sm transition-colors space-y-5">
-            {/* Greening Potential Score */}
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
-              <div>
-                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                  Greening Potential Score
-                </span>
-                <div className="flex items-baseline gap-2 mt-0.5">
-                  <span className="text-4xl font-black text-emerald-600 dark:text-emerald-400">
-                    {diagnosis.greeningPotentialScore}
-                  </span>
-                  <span className="text-xs font-semibold text-slate-400">/ 100</span>
-                  <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300">
-                    Prime Microclimate
-                  </span>
+            {preferences.simpleMode ? (
+              /* Summarized Greening Potential Score (Simple Mode ON) */
+              <div id="summarized-greening-score" className="space-y-4 animate-fadeIn">
+                <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                        Greening Potential Score
+                      </span>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300">
+                        Simple Mode Summary
+                      </span>
+                    </div>
+                    <div className="flex items-baseline gap-2 mt-0.5">
+                      <span className="text-4xl font-black text-emerald-600 dark:text-emerald-400">
+                        {diagnosis.greeningPotentialScore}
+                      </span>
+                      <span className="text-xs font-semibold text-slate-400">/ 100</span>
+                      <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300">
+                        Prime Microclimate
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="text-right">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                      Urban Cooling Impact
+                    </span>
+                    <p className="text-xs font-bold text-teal-600 dark:text-teal-400 mt-0.5">
+                      {diagnosis.urbanCoolingAndCO2.cooling}
+                    </p>
+                    <p className="text-[10px] text-slate-400">
+                      {diagnosis.urbanCoolingAndCO2.offset}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Quick 3-Pillar Summary */}
+                <div className="p-4 rounded-2xl bg-emerald-50/60 dark:bg-slate-800/80 border border-emerald-100 dark:border-slate-700 space-y-2.5">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
+                    Space Microclimate Overview
+                  </h4>
+                  <div className="grid grid-cols-1 gap-2 text-xs">
+                    <div className="flex items-center gap-2 text-slate-700 dark:text-slate-200">
+                      <Sun className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                      <span><strong>Sunlight:</strong> {diagnosis.sunlightVector.badge}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-slate-700 dark:text-slate-200">
+                      <Wind className="w-4 h-4 text-teal-500 flex-shrink-0" />
+                      <span><strong>Air & Wind:</strong> {diagnosis.windAndExposure.level}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-slate-700 dark:text-slate-200">
+                      <Layers className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                      <span><strong>Footprint:</strong> {diagnosis.usableFootprint.area}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Key Action Strategy */}
+                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-300 space-y-1">
+                  <p className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
+                    <span>Key Architectural Strategy</span>
+                  </p>
+                  <p className="leading-relaxed">
+                    {diagnosis.architecturalAdvice[0] ||
+                      'Prioritize vertical railings for solar exposure and reserve inner wall space for shade-tolerant herbs.'}
+                  </p>
                 </div>
               </div>
+            ) : (
+              /* Full Detailed Greening Potential Score Section (original) */
+              <>
+                {/* Greening Potential Score */}
+                <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+                  <div>
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                      Greening Potential Score
+                    </span>
+                    <div className="flex items-baseline gap-2 mt-0.5">
+                      <span className="text-4xl font-black text-emerald-600 dark:text-emerald-400">
+                        {diagnosis.greeningPotentialScore}
+                      </span>
+                      <span className="text-xs font-semibold text-slate-400">/ 100</span>
+                      <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300">
+                        Prime Microclimate
+                      </span>
+                    </div>
+                  </div>
 
-              <div className="text-right">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                  Urban Cooling Impact
-                </span>
-                <p className="text-xs font-bold text-teal-600 dark:text-teal-400 mt-0.5">
-                  {diagnosis.urbanCoolingAndCO2.cooling}
-                </p>
-                <p className="text-[10px] text-slate-400">
-                  {diagnosis.urbanCoolingAndCO2.offset}
-                </p>
-              </div>
-            </div>
+                  <div className="text-right">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                      Urban Cooling Impact
+                    </span>
+                    <p className="text-xs font-bold text-teal-600 dark:text-teal-400 mt-0.5">
+                      {diagnosis.urbanCoolingAndCO2.cooling}
+                    </p>
+                    <p className="text-[10px] text-slate-400">
+                      {diagnosis.urbanCoolingAndCO2.offset}
+                    </p>
+                  </div>
+                </div>
 
-            {/* Sunlight & Thermal Vector */}
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-2">
-                <Sun className="w-4 h-4 text-amber-500 flex-shrink-0" />
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-white">
-                  {diagnosis.sunlightVector.badge}
-                </h4>
-              </div>
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed pl-6">
-                {diagnosis.sunlightVector.description}
-              </p>
-            </div>
+                {/* Sunlight & Thermal Vector */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-2">
+                    <Sun className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-white">
+                      {diagnosis.sunlightVector.badge}
+                    </h4>
+                  </div>
+                  <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed pl-6">
+                    {diagnosis.sunlightVector.description}
+                  </p>
+                </div>
 
-            {/* Wind & Usable Footprint */}
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-2">
-                <Wind className="w-4 h-4 text-teal-500 flex-shrink-0" />
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-white">
-                  {diagnosis.windAndExposure.level}
-                </h4>
-              </div>
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed pl-6">
-                {diagnosis.windAndExposure.details}
-              </p>
-            </div>
+                {/* Wind & Usable Footprint */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-2">
+                    <Wind className="w-4 h-4 text-teal-500 flex-shrink-0" />
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-white">
+                      {diagnosis.windAndExposure.level}
+                    </h4>
+                  </div>
+                  <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed pl-6">
+                    {diagnosis.windAndExposure.details}
+                  </p>
+                </div>
 
-            {/* Container Layout Footprint */}
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-2">
-                <Layers className="w-4 h-4 text-blue-500 flex-shrink-0" />
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-white">
-                  {diagnosis.usableFootprint.area}
-                </h4>
-              </div>
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed pl-6">
-                {diagnosis.usableFootprint.details}
-              </p>
-            </div>
+                {/* Container Layout Footprint */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-2">
+                    <Layers className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-white">
+                      {diagnosis.usableFootprint.area}
+                    </h4>
+                  </div>
+                  <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed pl-6">
+                    {diagnosis.usableFootprint.details}
+                  </p>
+                </div>
 
-            {/* Detected Elements in Photo */}
-            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-                Identified Surfaces in Domestic Space
-              </h4>
-              <ul className="space-y-1.5 text-xs text-slate-600 dark:text-slate-300">
-                {diagnosis.identifiedInPhoto.map((item, idx) => (
-                  <li key={idx} className="flex items-start gap-2">
-                    <span className="text-emerald-500 mt-0.5">•</span>
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+                {/* Detected Elements in Photo */}
+                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                    Identified Surfaces in Domestic Space
+                  </h4>
+                  <ul className="space-y-1.5 text-xs text-slate-600 dark:text-slate-300">
+                    {diagnosis.identifiedInPhoto.map((item, idx) => (
+                      <li key={idx} className="flex items-start gap-2">
+                        <span className="text-emerald-500 mt-0.5">•</span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
 
-            {/* Architectural Recommendations */}
-            <div className="p-4 rounded-2xl bg-emerald-50/50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-800 space-y-2">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
-                Architectural Placement Strategy
-              </h4>
-              <ul className="space-y-1.5 text-xs text-emerald-900/80 dark:text-emerald-200">
-                {diagnosis.architecturalAdvice.map((advice, idx) => (
-                  <li key={idx} className="flex items-start gap-2">
-                    <span className="text-emerald-600 dark:text-emerald-400 font-bold">✓</span>
-                    <span>{advice}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+                {/* Architectural Recommendations */}
+                <div className="p-4 rounded-2xl bg-emerald-50/50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-800 space-y-2">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
+                    Architectural Placement Strategy
+                  </h4>
+                  <ul className="space-y-1.5 text-xs text-emerald-900/80 dark:text-emerald-200">
+                    {diagnosis.architecturalAdvice.map((advice, idx) => (
+                      <li key={idx} className="flex items-start gap-2">
+                        <span className="text-emerald-600 dark:text-emerald-400 font-bold">✓</span>
+                        <span>{advice}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Recommended Botanical Species Section */}
-      <div className="rounded-3xl bg-white dark:bg-slate-900 p-6 sm:p-8 border border-emerald-100 dark:border-slate-800 shadow-sm transition-colors space-y-6">
+      {/* Recommended Botanical Species Section - Hidden in Simple Mode */}
+      {!preferences.simpleMode && (
+        <div className="rounded-3xl bg-white dark:bg-slate-900 p-6 sm:p-8 border border-emerald-100 dark:border-slate-800 shadow-sm transition-colors space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h3 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
@@ -1043,6 +1205,7 @@ export const PlantAdvisorTab: React.FC<PlantAdvisorTabProps> = ({
           ))}
         </div>
       </div>
+      )}
 
       {/* Live Camera Modal */}
       {showCameraModal && (

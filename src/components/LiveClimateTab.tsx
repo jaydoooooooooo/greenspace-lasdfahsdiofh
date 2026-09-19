@@ -17,8 +17,13 @@ import {
   ChevronLeft,
   Navigation,
   Compass,
+  Calendar,
+  Sparkles,
+  Info,
+  Umbrella,
 } from 'lucide-react';
 import {
+  DailyForecastDay,
   LocationData,
   UserPreferences,
   WeatherData,
@@ -50,6 +55,7 @@ export const LiveClimateTab: React.FC<LiveClimateTabProps> = ({
   onBackToWelcome,
 }) => {
   const [selectedCityName, setSelectedCityName] = useState<string>('');
+  const [selectedForecastIndex, setSelectedForecastIndex] = useState<number | null>(0);
 
   const advisory = weather ? getTemperatureAdvisory(weather.temperature) : null;
 
@@ -69,14 +75,14 @@ export const LiveClimateTab: React.FC<LiveClimateTabProps> = ({
     }
   };
 
-  const getWeatherIcon = (code: number) => {
-    if (code === 0 || code === 1) return <Sun className="w-12 h-12 text-amber-400" />;
-    if (code === 2) return <CloudSun className="w-12 h-12 text-amber-300" />;
-    if (code === 3 || code === 45) return <Cloud className="w-12 h-12 text-slate-300" />;
-    if (code >= 51 && code <= 82) return <CloudRain className="w-12 h-12 text-blue-400" />;
-    if (code >= 71 && code <= 75) return <Snowflake className="w-12 h-12 text-cyan-300" />;
-    if (code >= 95) return <CloudLightning className="w-12 h-12 text-purple-400" />;
-    return <CloudSun className="w-12 h-12 text-amber-400" />;
+  const getWeatherIcon = (code: number, sizeClass = 'w-12 h-12') => {
+    if (code === 0 || code === 1) return <Sun className={`${sizeClass} text-amber-400 flex-shrink-0`} />;
+    if (code === 2) return <CloudSun className={`${sizeClass} text-amber-300 flex-shrink-0`} />;
+    if (code === 3 || code === 45) return <Cloud className={`${sizeClass} text-slate-300 flex-shrink-0`} />;
+    if (code >= 51 && code <= 82) return <CloudRain className={`${sizeClass} text-blue-400 flex-shrink-0`} />;
+    if (code >= 71 && code <= 75) return <Snowflake className={`${sizeClass} text-cyan-300 flex-shrink-0`} />;
+    if (code >= 95) return <CloudLightning className={`${sizeClass} text-purple-400 flex-shrink-0`} />;
+    return <CloudSun className={`${sizeClass} text-amber-400 flex-shrink-0`} />;
   };
 
   return (
@@ -223,6 +229,277 @@ export const LiveClimateTab: React.FC<LiveClimateTabProps> = ({
               </p>
             </div>
           </div>
+
+          {/* 7-Day Extended Weather Forecast */}
+          {weather.forecast && weather.forecast.length > 0 && (() => {
+            // Determine overall min & max for bar calculations
+            const allMins = weather.forecast.map((d) => d.tempMin);
+            const allMaxs = weather.forecast.map((d) => d.tempMax);
+            const globalMin = Math.min(...allMins);
+            const globalMax = Math.max(...allMaxs);
+            const range = Math.max(1, globalMax - globalMin);
+
+            const selectedDay =
+              selectedForecastIndex !== null && weather.forecast[selectedForecastIndex]
+                ? weather.forecast[selectedForecastIndex]
+                : weather.forecast[0];
+
+            const getBotanicalForecastTip = (day: DailyForecastDay) => {
+              if (day.precipitationProbability >= 45) {
+                return {
+                  tag: 'Rain Expected',
+                  tip: 'Pause scheduled container watering today to prevent root saturation.',
+                  color: 'text-blue-400 bg-blue-500/10 border-blue-500/20',
+                };
+              }
+              if (day.tempMax >= 30) {
+                return {
+                  tag: 'High Heat Watch',
+                  tip: 'Hydrate early in the morning before midday evaporation spikes.',
+                  color: 'text-amber-400 bg-amber-500/10 border-amber-500/20',
+                };
+              }
+              if (day.tempMin <= 4) {
+                return {
+                  tag: 'Frost Caution',
+                  tip: 'Chilly night: move delicate tropicals against warm domestic walls.',
+                  color: 'text-cyan-300 bg-cyan-500/10 border-cyan-500/20',
+                };
+              }
+              if (day.windSpeedMax >= 30) {
+                return {
+                  tag: 'Wind Alert',
+                  tip: 'Gusty winds: anchor tall planter pots and check railing stability.',
+                  color: 'text-teal-300 bg-teal-500/10 border-teal-500/20',
+                };
+              }
+              return {
+                tag: 'Optimal Growing',
+                tip: 'Favorable temperature & light conditions for standard care regimens.',
+                color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
+              };
+            };
+
+            if (preferences.simpleMode) {
+              const maxWeekTemp = Math.max(...weather.forecast.map((d) => d.tempMax));
+              const minWeekTemp = Math.min(...weather.forecast.map((d) => d.tempMin));
+              const rainyDays = weather.forecast.filter((d) => d.precipitationProbability >= 40);
+
+              return (
+                <div
+                  id="simple-forecast-card"
+                  className="relative z-10 p-5 rounded-2xl bg-slate-800/90 border border-slate-700 space-y-4 animate-fadeIn"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-700/80">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-5 h-5 text-emerald-400" />
+                      <h4 className="text-base font-bold text-white">
+                        7-Day Weather Forecast
+                      </h4>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100/10 text-amber-300 border border-amber-500/20">
+                        Simple Mode
+                      </span>
+                    </div>
+                    <span className="text-xs text-slate-400 flex items-center gap-1">
+                      <Navigation className="w-3 h-3 text-emerald-400" />
+                      <span>{location.city}</span>
+                    </span>
+                  </div>
+
+                  {/* Shortened compact 7-day strip */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2">
+                    {weather.forecast.map((day) => {
+                      let dateFormatted = day.date;
+                      try {
+                        const dObj = new Date(day.date + 'T00:00:00');
+                        dateFormatted = dObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                      } catch {
+                        // fallback
+                      }
+
+                      return (
+                        <div
+                          key={day.date}
+                          className="p-3 rounded-xl bg-slate-900/70 border border-slate-700/70 flex flex-col items-center justify-between text-center gap-2"
+                        >
+                          <div>
+                            <span className="font-bold text-xs text-white block">
+                              {day.dayName.slice(0, 3)}
+                            </span>
+                            <span className="text-[10px] text-slate-400 block">
+                              {dateFormatted}
+                            </span>
+                          </div>
+
+                          <div className="my-1">
+                            {getWeatherIcon(day.weatherCode, 'w-6 h-6')}
+                          </div>
+
+                          <div className="space-y-0.5">
+                            <div className="text-xs">
+                              <strong className="text-white font-bold">{formatTemp(day.tempMax)}</strong>
+                              <span className="text-slate-400 text-[11px] ml-1">/ {formatTemp(day.tempMin)}</span>
+                            </div>
+
+                            {day.precipitationProbability >= 20 ? (
+                              <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-blue-300 bg-blue-500/10 px-1.5 py-0.5 rounded-md">
+                                <Droplet className="w-2.5 h-2.5 text-blue-400" />
+                                {day.precipitationProbability}%
+                              </span>
+                            ) : (
+                              <span className="text-[10px] text-slate-500 block truncate max-w-[80px]">
+                                {day.weatherDescription.split(' ')[0]}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Concise 1-line outlook */}
+                  <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-700/60 text-xs text-slate-300 flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                    <p className="leading-snug">
+                      <strong>7-Day Outlook:</strong> Highs near {formatTemp(maxWeekTemp)}, lows around {formatTemp(minWeekTemp)}.{' '}
+                      {rainyDays.length > 0
+                        ? `Rain expected on ${rainyDays.map((d) => d.dayName).join(', ')} — pause manual watering then.`
+                        : 'Dry conditions anticipated — proceed with regular hydration.'}
+                    </p>
+                  </div>
+                </div>
+              );
+            }
+
+            return (
+              <div className="relative z-10 p-5 sm:p-6 rounded-2xl bg-slate-800/90 border border-slate-700 space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-slate-700/80">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-5 h-5 text-emerald-400" />
+                    <h4 className="text-base sm:text-lg font-bold text-white">
+                      7-Day Weather & Microclimate Forecast
+                    </h4>
+                  </div>
+                  <span className="text-xs text-slate-400 flex items-center gap-1.5">
+                    <Navigation className="w-3 h-3 text-emerald-400" />
+                    <span>{location.city} Extended Outlook</span>
+                  </span>
+                </div>
+
+                {/* 7-Day List/Grid */}
+                <div className="space-y-2">
+                  {weather.forecast.map((day, idx) => {
+                    const isSelected = selectedForecastIndex === idx;
+                    const botTip = getBotanicalForecastTip(day);
+                    const leftPercent = Math.max(0, Math.min(90, Math.round(((day.tempMin - globalMin) / range) * 100)));
+                    const barWidth = Math.max(8, Math.min(100 - leftPercent, Math.round(((day.tempMax - day.tempMin) / range) * 100)));
+
+                    let dateFormatted = day.date;
+                    try {
+                      const dObj = new Date(day.date + 'T00:00:00');
+                      dateFormatted = dObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    } catch {
+                      // fallback
+                    }
+
+                    return (
+                      <div
+                        key={day.date}
+                        onClick={() => setSelectedForecastIndex(idx)}
+                        className={`p-3 sm:p-3.5 rounded-xl border transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                          isSelected
+                            ? 'bg-slate-700/90 border-emerald-500/80 shadow-md ring-1 ring-emerald-500/40'
+                            : 'bg-slate-900/60 border-slate-700/60 hover:bg-slate-800/80 hover:border-slate-600'
+                        }`}
+                      >
+                        {/* Day and Date */}
+                        <div className="w-full sm:w-32 flex items-center justify-between sm:justify-start gap-2">
+                          <span className="font-bold text-sm text-white">
+                            {day.dayName}
+                          </span>
+                          <span className="text-xs text-slate-400 font-medium">
+                            {dateFormatted}
+                          </span>
+                        </div>
+
+                        {/* Weather condition & Icon */}
+                        <div className="flex items-center gap-2.5 sm:w-44">
+                          {getWeatherIcon(day.weatherCode, 'w-6 h-6')}
+                          <span className="text-xs font-semibold text-slate-200 truncate">
+                            {day.weatherDescription}
+                          </span>
+                        </div>
+
+                        {/* Rain probability */}
+                        <div className="flex items-center gap-1.5 sm:w-20">
+                          <Droplet className={`w-3.5 h-3.5 ${day.precipitationProbability > 20 ? 'text-blue-400' : 'text-slate-500'}`} />
+                          <span className={`text-xs font-semibold ${day.precipitationProbability > 20 ? 'text-blue-300' : 'text-slate-400'}`}>
+                            {day.precipitationProbability}%
+                          </span>
+                        </div>
+
+                        {/* Temp Range Visual Bar */}
+                        <div className="flex items-center gap-3 sm:w-48 flex-1">
+                          <span className="text-xs font-semibold text-slate-400 w-9 text-right">
+                            {formatTemp(day.tempMin)}
+                          </span>
+                          <div className="flex-1 h-2 bg-slate-800 rounded-full relative overflow-hidden">
+                            <div
+                              className="absolute top-0 bottom-0 rounded-full bg-gradient-to-r from-blue-400 via-emerald-400 to-amber-400"
+                              style={{
+                                left: `${leftPercent}%`,
+                                width: `${barWidth}%`,
+                              }}
+                            />
+                          </div>
+                          <span className="text-xs font-bold text-white w-9">
+                            {formatTemp(day.tempMax)}
+                          </span>
+                        </div>
+
+                        {/* Plant Tip Badge */}
+                        <div className="hidden lg:flex items-center sm:w-44 justify-end">
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${botTip.color} truncate`}>
+                            {botTip.tag}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Selected Day Horticultural Breakdown Card */}
+                {selectedDay && (
+                  <div className="mt-3 p-4 rounded-xl bg-slate-900/90 border border-emerald-500/30 space-y-2 animate-fadeIn">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-emerald-400" />
+                        <h5 className="text-xs font-bold uppercase tracking-wider text-emerald-300">
+                          {selectedDay.dayName} Plant Care & Climate Insight ({selectedDay.date})
+                        </h5>
+                      </div>
+                      <div className="flex items-center gap-3 text-xs text-slate-300">
+                        <span className="flex items-center gap-1">
+                          <Wind className="w-3.5 h-3.5 text-teal-400" />
+                          <span>Max Wind: {selectedDay.windSpeedMax} km/h</span>
+                        </span>
+                        {selectedDay.uvIndexMax != null && (
+                          <span className="flex items-center gap-1">
+                            <Sun className="w-3.5 h-3.5 text-amber-400" />
+                            <span>Max UV: {selectedDay.uvIndexMax}</span>
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <p className="text-xs text-slate-200 leading-relaxed">
+                      {getBotanicalForecastTip(selectedDay).tip}{' '}
+                      Forecasted temperatures range from a low of <strong>{formatTemp(selectedDay.tempMin)}</strong> to a high of <strong>{formatTemp(selectedDay.tempMax)}</strong> with a <strong>{selectedDay.precipitationProbability}%</strong> chance of precipitation.
+                    </p>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           {/* Microclimate Horticultural Advisory Card */}
           {advisory && (

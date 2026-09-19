@@ -6,10 +6,12 @@ import { PlantAdvisorTab } from './components/PlantAdvisorTab';
 import { LiveClimateTab } from './components/LiveClimateTab';
 import { RemedyLibraryTab } from './components/RemedyLibraryTab';
 import { SavedRemediesTab } from './components/SavedRemediesTab';
+import { LoginModal } from './components/LoginModal';
 import {
   LocationData,
   RemedyItem,
   TabType,
+  UserAccount,
   UserPreferences,
   WeatherData,
 } from './types';
@@ -18,6 +20,27 @@ import { fetchWeather, reverseGeocode } from './utils/weather';
 export function App() {
   const [activeTab, setActiveTab] = useState<TabType>('welcome');
   const [ecoGuideQuery, setEcoGuideQuery] = useState<string>('');
+
+  // User Authentication State
+  const [currentUser, setCurrentUser] = useState<UserAccount | null>(() => {
+    try {
+      const active = sessionStorage.getItem('greenspace_active_user');
+      if (active) {
+        return JSON.parse(active);
+      }
+    } catch (e) {
+      console.warn('Failed to load session user:', e);
+    }
+    return null;
+  });
+
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(() => {
+    try {
+      return !sessionStorage.getItem('greenspace_active_user');
+    } catch {
+      return true;
+    }
+  });
 
   // User preferences with localStorage persistence
   const [preferences, setPreferences] = useState<UserPreferences>(() => {
@@ -37,12 +60,18 @@ export function App() {
     };
   });
 
-  // Saved remedies with localStorage persistence
+  // Saved remedies with per-user localStorage persistence
   const [savedRemedies, setSavedRemedies] = useState<RemedyItem[]>(() => {
     try {
-      const saved = localStorage.getItem('greenspace_saved_remedies');
-      if (saved) {
-        return JSON.parse(saved);
+      const activeStr = sessionStorage.getItem('greenspace_active_user');
+      if (activeStr) {
+        const user: UserAccount = JSON.parse(activeStr);
+        const userSaved = localStorage.getItem(
+          `greenspace_saved_remedies_${user.username.toLowerCase()}`
+        );
+        if (userSaved) {
+          return JSON.parse(userSaved);
+        }
       }
     } catch (e) {
       console.warn('Failed to load saved remedies from localStorage:', e);
@@ -78,14 +107,57 @@ export function App() {
     }
   }, [preferences]);
 
-  // Sync saved remedies to localStorage
+  // Whenever currentUser changes, load that user's specific saved remedies
   useEffect(() => {
-    try {
-      localStorage.setItem('greenspace_saved_remedies', JSON.stringify(savedRemedies));
-    } catch (e) {
-      console.warn('Failed to save remedies to localStorage:', e);
+    if (currentUser) {
+      const userKey = `greenspace_saved_remedies_${currentUser.username.toLowerCase()}`;
+      try {
+        const stored = localStorage.getItem(userKey);
+        if (stored) {
+          setSavedRemedies(JSON.parse(stored));
+        } else {
+          setSavedRemedies([]);
+        }
+      } catch (e) {
+        console.warn('Failed to load user saved remedies:', e);
+        setSavedRemedies([]);
+      }
+    } else {
+      setSavedRemedies([]);
     }
-  }, [savedRemedies]);
+  }, [currentUser?.username]);
+
+  // Sync saved remedies strictly to current user's isolated storage
+  useEffect(() => {
+    if (currentUser) {
+      const userKey = `greenspace_saved_remedies_${currentUser.username.toLowerCase()}`;
+      try {
+        localStorage.setItem(userKey, JSON.stringify(savedRemedies));
+      } catch (e) {
+        console.warn('Failed to save user remedies to localStorage:', e);
+      }
+    }
+  }, [savedRemedies, currentUser?.username]);
+
+  const handleLoginSuccess = (account: UserAccount) => {
+    setCurrentUser(account);
+    setIsLoginModalOpen(false);
+    try {
+      sessionStorage.setItem('greenspace_active_user', JSON.stringify(account));
+    } catch (e) {
+      console.warn('Failed to save session user:', e);
+    }
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    setIsLoginModalOpen(true);
+    try {
+      sessionStorage.removeItem('greenspace_active_user');
+    } catch (e) {
+      console.warn('Failed to remove session user:', e);
+    }
+  };
 
   // Initial weather load (Tokyo default)
   useEffect(() => {
@@ -239,6 +311,14 @@ export function App() {
         preferences={preferences}
         setPreferences={setPreferences}
         savedCount={savedRemedies.length}
+        currentUser={currentUser}
+        onLogout={handleLogout}
+      />
+
+      {/* Login Authentication Modal Overlay */}
+      <LoginModal
+        isOpen={isLoginModalOpen || !currentUser}
+        onLoginSuccess={handleLoginSuccess}
       />
 
       {/* Main Content Area */}
@@ -313,6 +393,7 @@ export function App() {
             onOpenLibrary={() => setActiveTab('remedies')}
             preferences={preferences}
             onBackToWelcome={handleBackToWelcome}
+            currentUser={currentUser}
           />
         )}
       </main>

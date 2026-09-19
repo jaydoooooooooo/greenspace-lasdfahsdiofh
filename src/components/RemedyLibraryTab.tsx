@@ -237,70 +237,146 @@ export const RemedyLibraryTab: React.FC<RemedyLibraryTabProps> = ({
                 </div>
               </div>
 
-              {/* Diagnosis */}
-              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">
-                  Root Cause Diagnosis
-                </h4>
-                <p className="text-sm text-slate-800 dark:text-slate-200 leading-relaxed font-medium">
-                  {selectedRemedy.diagnosis}
-                </p>
-              </div>
+              {preferences.simpleMode ? (
+                /* Simplified Remedy View (Simple Mode ON) */
+                <div id="simple-remedy-view" className="space-y-4 animate-fadeIn">
+                  {/* Simplified Quick Method Header */}
+                  <div className="p-3 rounded-2xl bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200/70 dark:border-amber-900/50 flex items-center justify-between text-xs">
+                    <span className="font-bold text-amber-900 dark:text-amber-300">
+                      ⚡ Simplified Remedy Method
+                    </span>
+                    <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                      Simple Mode Active
+                    </span>
+                  </div>
 
-              {/* Materials */}
-              <div className="space-y-2">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                  <Hammer className="w-3.5 h-3.5 text-emerald-500" />
-                  <span>Exact Kitchen Ingredients</span>
-                </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {selectedRemedy.materials.map((m, idx) => (
-                    <div
-                      key={idx}
-                      className="p-3 rounded-xl bg-emerald-50/50 dark:bg-slate-800 border border-emerald-100 dark:border-slate-700 flex items-center justify-between text-xs"
-                    >
-                      <span className="font-semibold text-slate-800 dark:text-slate-200">
-                        {m.item}
-                      </span>
-                      <span className="font-bold text-emerald-700 dark:text-emerald-300">
-                        {m.amount}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+                  {/* Concise Diagnosis (1 line) */}
+                  <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">
+                      Target Diagnosis
+                    </span>
+                    <p className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200">
+                      {selectedRemedy.diagnosis.split('.')[0] + '.'}
+                    </p>
+                  </div>
 
-              {/* Step-by-Step Instructions */}
-              <div className="space-y-3">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-                  Step-by-Step Application
-                </h4>
-                <div className="space-y-2.5">
-                  {selectedRemedy.steps.map((step) => (
-                    <div
-                      key={step.stepNumber}
-                      className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 space-y-1"
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                          Step {step.stepNumber}:
-                        </span>
-                        <h5 className="font-bold text-sm text-slate-900 dark:text-white">
-                          {step.title}
-                        </h5>
-                      </div>
-                      <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
-                        {step.instruction}
-                      </p>
-                      {step.proTip && (
-                        <p className="text-xs text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 p-2 rounded-xl border border-amber-200/60 dark:border-amber-900/60 mt-2">
-                          💡 <strong>Pro-Tip:</strong> {step.proTip}
-                        </p>
-                      )}
+                  {/* Compact Ingredients */}
+                  <div className="space-y-1.5">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                      <Hammer className="w-3.5 h-3.5 text-emerald-500" />
+                      <span>Ingredients</span>
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedRemedy.materials.map((m, idx) => (
+                        <div
+                          key={idx}
+                          className="px-3 py-1.5 rounded-xl bg-emerald-50/70 dark:bg-slate-800 border border-emerald-200/80 dark:border-slate-700 text-xs font-medium text-slate-800 dark:text-slate-200"
+                        >
+                          <span className="font-bold text-emerald-700 dark:text-emerald-300 mr-1.5">
+                            {m.amount}
+                          </span>
+                          <span>{m.item}</span>
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  </div>
+
+                  {/* Simplified Steps (concise without extra pro-tip boxes) */}
+                  <div className="space-y-2">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                      Quick Steps
+                    </h4>
+                    <div className="space-y-2">
+                      {selectedRemedy.steps.map((step) => (
+                        <div
+                          key={step.stepNumber}
+                          className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-xs flex items-start gap-2.5"
+                        >
+                          <span className="w-5 h-5 rounded-full bg-emerald-500 text-white font-bold text-[10px] flex items-center justify-center flex-shrink-0 mt-0.5">
+                            {step.stepNumber}
+                          </span>
+                          <div>
+                            <span className="font-bold text-slate-900 dark:text-white mr-1.5">
+                              {step.title}:
+                            </span>
+                            <span className="text-slate-700 dark:text-slate-300">
+                              {step.instruction}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                /* Full Detailed Remedy View (original) */
+                <>
+                  {/* Diagnosis */}
+                  <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">
+                      Root Cause Diagnosis
+                    </h4>
+                    <p className="text-sm text-slate-800 dark:text-slate-200 leading-relaxed font-medium">
+                      {selectedRemedy.diagnosis}
+                    </p>
+                  </div>
+
+                  {/* Materials */}
+                  <div className="space-y-2">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                      <Hammer className="w-3.5 h-3.5 text-emerald-500" />
+                      <span>Exact Kitchen Ingredients</span>
+                    </h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {selectedRemedy.materials.map((m, idx) => (
+                        <div
+                          key={idx}
+                          className="p-3 rounded-xl bg-emerald-50/50 dark:bg-slate-800 border border-emerald-100 dark:border-slate-700 flex items-center justify-between text-xs"
+                        >
+                          <span className="font-semibold text-slate-800 dark:text-slate-200">
+                            {m.item}
+                          </span>
+                          <span className="font-bold text-emerald-700 dark:text-emerald-300">
+                            {m.amount}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Step-by-Step Instructions */}
+                  <div className="space-y-3">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                      Step-by-Step Application
+                    </h4>
+                    <div className="space-y-2.5">
+                      {selectedRemedy.steps.map((step) => (
+                        <div
+                          key={step.stepNumber}
+                          className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 space-y-1"
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                              Step {step.stepNumber}:
+                            </span>
+                            <h5 className="font-bold text-sm text-slate-900 dark:text-white">
+                              {step.title}
+                            </h5>
+                          </div>
+                          <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+                            {step.instruction}
+                          </p>
+                          {step.proTip && (
+                            <p className="text-xs text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 p-2 rounded-xl border border-amber-200/60 dark:border-amber-900/60 mt-2">
+                              💡 <strong>Pro-Tip:</strong> {step.proTip}
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
 
               {/* Action Button: Ask EcoGuide */}
               <div className="pt-2 flex justify-end">

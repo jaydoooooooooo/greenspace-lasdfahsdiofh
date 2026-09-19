@@ -18,6 +18,18 @@ export interface LocationData {
   isLive: boolean;
 }
 
+export interface DailyForecastDay {
+  date: string;
+  dayName: string;
+  weatherCode: number;
+  weatherDescription: string;
+  tempMax: number;
+  tempMin: number;
+  precipitationProbability: number;
+  windSpeedMax: number;
+  uvIndexMax?: number;
+}
+
 export interface WeatherData {
   temperature: number;
   apparentTemperature: number;
@@ -29,6 +41,15 @@ export interface WeatherData {
   tempMax: number;
   tempMin: number;
   updatedAt: string;
+  forecast?: DailyForecastDay[];
+}
+
+export interface UserAccount {
+  username: string;
+  password: string;
+  createdAt: string;
+  savedRemedies?: RemedyItem[];
+  preferences?: UserPreferences;
 }
 
 export interface RemedyMaterial {

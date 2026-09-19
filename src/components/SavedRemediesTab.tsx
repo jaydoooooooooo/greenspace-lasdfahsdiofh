@@ -10,8 +10,9 @@ import {
   ChevronLeft,
   Clock,
   Hammer,
+  User,
 } from 'lucide-react';
-import { RemedyItem, UserPreferences } from '../types';
+import { RemedyItem, UserAccount, UserPreferences } from '../types';
 import { speechService } from '../utils/speech';
 
 interface SavedRemediesTabProps {
@@ -22,6 +23,7 @@ interface SavedRemediesTabProps {
   onOpenLibrary: () => void;
   preferences: UserPreferences;
   onBackToWelcome?: () => void;
+  currentUser?: UserAccount | null;
 }
 
 export const SavedRemediesTab: React.FC<SavedRemediesTabProps> = ({
@@ -32,6 +34,7 @@ export const SavedRemediesTab: React.FC<SavedRemediesTabProps> = ({
   onOpenLibrary,
   preferences,
   onBackToWelcome,
+  currentUser,
 }) => {
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
@@ -68,11 +71,17 @@ export const SavedRemediesTab: React.FC<SavedRemediesTabProps> = ({
             <Bookmark className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white flex flex-wrap items-center gap-2">
               <span>Saved Remedies & Garden Protocols</span>
               {savedRemedies.length > 0 && (
                 <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300">
                   {savedRemedies.length}
+                </span>
+              )}
+              {currentUser && (
+                <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200/80 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 font-semibold flex items-center gap-1">
+                  <User className="w-3 h-3" />
+                  <span>@{currentUser.username}'s personal tab</span>
                 </span>
               )}
             </h2>
@@ -134,20 +143,47 @@ export const SavedRemediesTab: React.FC<SavedRemediesTabProps> = ({
                   </span>
                 </div>
 
-                <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-2">
-                  {item.diagnosis}
-                </p>
+                {preferences.simpleMode ? (
+                  /* Simplified Saved Remedy Card */
+                  <div className="space-y-2">
+                    <p className="text-xs text-slate-600 dark:text-slate-300 font-medium">
+                      {item.diagnosis.split('.')[0] + '.'}
+                    </p>
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {item.materials.slice(0, 3).map((m, idx) => (
+                        <span
+                          key={idx}
+                          className="px-2 py-0.5 rounded-lg bg-emerald-50 dark:bg-slate-800 text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 border border-emerald-200/60 dark:border-slate-700"
+                        >
+                          {m.amount} {m.item}
+                        </span>
+                      ))}
+                      {item.materials.length > 3 && (
+                        <span className="px-1.5 py-0.5 text-[10px] text-slate-400">
+                          +{item.materials.length - 3} more
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  /* Full Saved Remedy Card (original) */
+                  <>
+                    <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-2">
+                      {item.diagnosis}
+                    </p>
 
-                {/* Materials preview */}
-                <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-1">
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
-                    <Hammer className="w-3 h-3 text-emerald-500" />
-                    <span>Key Ingredients</span>
-                  </p>
-                  <p className="text-xs text-slate-700 dark:text-slate-200 line-clamp-2">
-                    {item.materials.map((m) => `${m.amount} ${m.item}`).join(' • ')}
-                  </p>
-                </div>
+                    {/* Materials preview */}
+                    <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-1">
+                      <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
+                        <Hammer className="w-3 h-3 text-emerald-500" />
+                        <span>Key Ingredients</span>
+                      </p>
+                      <p className="text-xs text-slate-700 dark:text-slate-200 line-clamp-2">
+                        {item.materials.map((m) => `${m.amount} ${m.item}`).join(' • ')}
+                      </p>
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* Action Toolbar */}
